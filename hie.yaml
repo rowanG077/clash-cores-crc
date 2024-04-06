@@ -1,0 +1,12 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:clash-cores-crc"
+    - path: "./tests/doctests.hs"
+      component: "clash-cores-crc:doctests"
+    - path: "./tests"
+      component: "clash-cores-crc:test-library"
+    - path: "./bin/Clashi.hs"
+      component: "clash-cores-crc:exe:clashi"
+    - path: "./bin/Clash.hs"
+      component: "clash-cores-crc:exe:clash"

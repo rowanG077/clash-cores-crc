@@ -1,0 +1,134 @@
+cabal-version:       2.4
+name:                clash-cores-crc
+version:             0.1
+license:             BSD-2-Clause
+author:              Rowan Goemans <goemansrowan@gmail.com>
+maintainer:          Rowan Goemans <goemansrowan@gmail.com>
+
+common common-options
+  default-extensions:
+    BinaryLiterals
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    FlexibleContexts
+    MagicHash
+    NoImplicitPrelude
+    PostfixOperators
+    NoStarIsType
+    ScopedTypeVariables
+    TemplateHaskell
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+    -- TemplateHaskell is used to support convenience functions such as
+    -- 'listToVecTH' and 'bLit'.
+    TemplateHaskell
+    QuasiQuotes
+
+    -- Prelude isn't imported by default as Clash offers Clash.Prelude
+    NoImplicitPrelude
+  ghc-options:
+    -Wall -Wcompat
+    -haddock
+
+    -- Plugins to support type-level constraint solving on naturals
+    -fplugin GHC.TypeLits.Extra.Solver
+    -fplugin GHC.TypeLits.Normalise
+    -fplugin GHC.TypeLits.KnownNat.Solver
+    -fconstraint-solver-iterations=100
+
+    -- Clash needs access to the source code in compiled modules
+    -fexpose-all-unfoldings
+
+    -- Worker wrappers introduce unstable names for functions that might have
+    -- blackboxes attached for them. You can disable this, but be sure to add
+    -- a no-specialize pragma to every function with a blackbox.
+    -fno-worker-wrapper
+
+    -- Strict annotations - while sometimes preventing space leaks - trigger
+    -- optimizations Clash can't deal with. See:
+    --
+    --    https://github.com/clash-lang/clash-compiler/issues/2361
+    --
+    -- These flags disables these optimizations. Note that the fields will
+    -- remain strict.
+    -fno-unbox-small-strict-fields
+    -fno-unbox-strict-fields
+  build-depends:
+    base,
+    Cabal,
+
+    -- clash-prelude will set suitable version bounds for the plugins
+    -- clash-prelude >= 1.8.1 && < 1.10,
+    ghc-typelits-natnormalise,
+    ghc-typelits-extra,
+    ghc-typelits-knownnat
+
+custom-setup
+  setup-depends:
+    base          >= 4.11 && <5,
+    Cabal         >= 2.4,
+    cabal-doctest >= 1.0.1 && <1.1
+
+library
+  import: common-options
+  hs-source-dirs: src
+  exposed-modules:
+    Clash.Cores.Crc
+    Clash.Cores.Crc.Catalog
+    Clash.Cores.Crc.Internal
+  default-language: Haskell2010
+  build-depends:
+    mtl,
+    clash-prelude,
+    template-haskell,
+    constraints,
+    split
+
+-- Builds the executable 'clash', with clash-cores-crc project in scope
+-- executable clash
+--   main-is: bin/Clash.hs
+--   default-language: Haskell2010
+--   Build-Depends: base, clash-ghc, clash-cores-crc
+
+-- -- Builds the executable 'clashi', with clash-cores-crc project in scope
+-- executable clashi
+--   main-is: bin/Clashi.hs
+--   default-language: Haskell2010
+--   build-depends: base, clash-ghc, clash-cores-crc
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded
+  hs-source-dirs:   tests
+  build-depends:
+    base,
+    clash-cores-crc,
+    doctest,
+    process
+
+test-suite test-library
+  import: common-options
+  default-language: Haskell2010
+  hs-source-dirs: tests
+  type: exitcode-stdio-1.0
+  ghc-options: -threaded
+  main-is: unittests.hs
+  other-modules:
+    Tests.Crc
+  build-depends:
+    clash-cores-crc,
+    QuickCheck,
+    clash-prelude,
+    clash-prelude-hedgehog,
+    hedgehog,
+    tasty >= 1.2 && < 1.5,
+    tasty-hedgehog,
+    tasty-quickcheck,
+    tasty-th
