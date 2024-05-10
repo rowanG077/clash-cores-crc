@@ -2,9 +2,9 @@ import Prelude
 
 import Test.Tasty
 
-import qualified Tests.Crc
+import qualified Tests.Cores.Crc
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Tests.Crc.tests
+  [ Tests.Cores.Crc.tests
   ]
